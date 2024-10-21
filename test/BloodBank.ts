@@ -57,7 +57,6 @@ describe("BloodBank", () => {
       const changedGender = "Female"
       await contract.connect(addr1).EditMyProfile("", "", "",changedGender , "", 0);
       const profile = await contract.profile(addr1);
-
       expect(profile.name).to.eq(name);
       expect(profile.gender).to.eq(changedGender);
     })
@@ -218,5 +217,57 @@ describe("BloodBank", () => {
 
   });
 
- 
+  describe("Notifications", () => {
+    beforeEach(async () => {
+      await contract.connect(addr1).EditMyProfile("", "B -ve", '', '', '', 0);
+      await contract.CreateRequest(Date.now().toString(), "Hi i need blood", "img");
+      await contract
+        .connect(addr2)
+        .buyBks({ value: ethers.parseEther("0.002") });
+      await contract.connect(addr2).transferBKS(addr1, 50);
+      await contract.connect(addr1).withdraw();
+    });
+
+    it("Should notify if created request", async () => {
+      expect(await contract.notifications(addr1, 1)).to.eq(
+        "Changed BloodType to B -ve Sucessfully"
+      );
+    });
+
+    it("Should notify if bought BKS", async () => {
+      expect(await contract.notifications(owner, 1)).to.eq(
+        "Created a request Sucessfully"
+      );
+    });
+
+    it("Should notify if bought BKS", async () => {
+      expect(await contract.notifications(addr2, 1)).to.eq("Bought 100BKS sucessfully");
+    })
+
+    it("Should notify if transferred BKS", async () => {
+      expect(await contract.notifications(addr2, 2)).to.eq(
+        `Transferred ${50} BKS to Bikalpa`
+      );
+    });
+
+    it("Should notify if received BKS", async () => {
+      expect(await contract.notifications(addr1, 2)).to.eq(
+        `Received ${50} BKS From `
+      );
+    });
+
+    it("Should notify if wthdrawen", async () => {
+      expect(await contract.notifications(addr1, 3)).to.eq(
+        `WithDrawed 1000000000000000 eth Sucessfully`
+      );
+    })
+    it("Should get all notifications when called", async () => {
+      const allNotify = await contract.connect(addr1).getAllNotification();
+      expect(allNotify.length).to.eq(3);
+      expect(allNotify[2]).to.eq(`Received ${50} BKS From `);
+   })
+
+  });
+
+  
 })

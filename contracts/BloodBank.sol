@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: SEE LICENSE IN LICENSE
 pragma solidity 0.8.27;
 
+import "hardhat/console.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
+
+
 contract BLOODBANK {
+        using Strings for uint256;
 
     string public name ;
     address public owner ;
@@ -31,6 +36,20 @@ contract BLOODBANK {
         Comment[] comments;
     }
 
+    struct Chat{
+        string text;
+        address from;
+        address to;
+        uint time;
+    }
+
+    struct Donation{
+        string text;
+        Chat[] chats;
+        Requests request;
+        address commentatorId;
+    }
+
      //Profiles
     mapping(address=>LoginDetails) public profile ;
 
@@ -42,11 +61,26 @@ contract BLOODBANK {
    
    //BKS tokens
     mapping(address=>uint) public balances ;
+
+    //Notification
+    mapping (address => mapping(uint=>string)) public notifications;
+    mapping (address=>uint) public myNotificationCount ;
+
+    //Activities
+     mapping (address => mapping(uint=>string)) public activities;
+    mapping (address=>uint) public activitiesCount ;
+
+    //PendingDonations
+    mapping(address =>mapping(uint=>Donation)) public myPending;
+    mapping (address=>uint) public myPendingCount;
     
     //events
     event CreateProfile (string name , string bloodType );
     event CreateRequestEvent (string timestamp , string details );
     event AddComment(string requestId , string comment);
+
+    
+
 
     modifier onlyOwner(){
         require(msg.sender ==owner , "This function can only be run if you are owner");
@@ -78,24 +112,40 @@ contract BLOODBANK {
 
     if (bytes(_name).length > 0) {
         loginDetails.name = _name;
+        myNotificationCount[msg.sender]++;
+        notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed name to " , _name , " Sucessfully"));
     }
     if (bytes(_bloodType).length > 0) {
         loginDetails.bloodType = _bloodType;
+        myNotificationCount[msg.sender]++;
+        notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed BloodType to " , _bloodType , " Sucessfully"));
     }
     if (bytes(_dob).length > 0) {
         loginDetails.dateOfBirth = _dob;
+        myNotificationCount[msg.sender]++;
+        notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed dob to " , _dob , " Sucessfully"));
+
     }
     if (bytes(_gender).length > 0) {
         loginDetails.gender = _gender;
+        myNotificationCount[msg.sender]++;
+          notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed gender to " , _gender , " Sucessfully"));
+
     }
     if (bytes(_MR).length > 0) {
         loginDetails.medicalReport = _MR;
+                myNotificationCount[msg.sender]++;
+                 notifications[msg.sender][myNotificationCount[msg.sender]] = "Updated medical report sucessfully";
+   activitiesCount[msg.sender]++;
+   activities[msg.sender][activitiesCount[msg.sender]] = string("Updated Medical Report");
+
     }
     if (_EC != 0) {
         loginDetails.emergencyContact = _EC;
-    }
-     
+        myNotificationCount[msg.sender]++;
+        notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed Contact to " , _EC , " Sucessfully"));
 
+    }
     }
 
     function CreateRequest (string memory _requestID , string memory _details , string memory _image) external {
@@ -111,6 +161,8 @@ contract BLOODBANK {
     myRequestsCount[msg.sender]++;
     myRequests[msg.sender][myRequestsCount[msg.sender]] = request;
 
+    myNotificationCount[msg.sender]++ ;
+    notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Created a request Sucessfully"));
     emit CreateRequestEvent(_requestID , _details);
     }
 
@@ -142,8 +194,6 @@ contract BLOODBANK {
         require(bytes(allRequests[_requestId].requestId).length != 0 , "The Request Doesn't Exists");  //bytes is required to check the length of the string u cant directly access the length in solidity by directly using string.length the bytes will change the single letters of string into hexadecimal or ascii and if there are no string letter then it will return 0x000 and if there is "ab" then it will return 0x6162. 
         Requests storage request = allRequests[_requestId];   //we are using storage here cuz we are updating state inside a mapping to push somethin on array we could use memory but if we are playing with a state in a mapping or trying to change a state we need storage.
         
-
-
         Comment memory comment =  Comment({ //we are using memory here cuz we are pushing an obj
           commentator:msg.sender ,
           text:_comment
@@ -186,6 +236,12 @@ function transferBKS(address _id , uint _amount) external {
 
     balances[_id] += _amount;
     balances[msg.sender] -= _amount;
+
+    myNotificationCount[msg.sender]++;
+    notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Transferred " , _amount.toString() , " BKS to " , profile[_id].name));
+
+    myNotificationCount[_id]++;
+    notifications[_id][myNotificationCount[_id]] = string (abi.encodePacked("Received " , _amount.toString() , " BKS From " , profile[msg.sender].name));
 }
 
 function withdraw() external payable{
@@ -193,6 +249,8 @@ function withdraw() external payable{
     uint amountToWithdraw = balances[msg.sender] * 0.00002 ether ;
  payable(msg.sender).transfer(amountToWithdraw);
   balances[msg.sender] = 0;
+  myNotificationCount[msg.sender]++;
+  notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("WithDrawed " , amountToWithdraw.toString() , " eth Sucessfully"));
 }
 
 function buyBks() external payable {
@@ -201,11 +259,58 @@ function buyBks() external payable {
 
      if(msg.value == 0.002 ether) {
       balances[msg.sender] += 100;
+      myNotificationCount[msg.sender]++;
+      notifications[msg.sender][myNotificationCount[msg.sender]] = string("Bought 100BKS sucessfully");
+      activitiesCount[msg.sender]++;
+      activities[msg.sender][activitiesCount[msg.sender]] = "Bought 100Bks";
      } 
 
      if(msg.value == 0.001 ether) {
       balances[msg.sender] += 50;
+       myNotificationCount[msg.sender]++;
+      notifications[msg.sender][myNotificationCount[msg.sender]] = string("Bought 50BKS sucessfully");
+     activitiesCount[msg.sender]++;
+     activities[msg.sender][activitiesCount[msg.sender]]=string("Bought 50BKS");
      }  
+    }
+
+    function getAllNotification() external view returns(string[] memory){
+    
+     string[] memory notis = new string[](myNotificationCount[msg.sender]);
+
+     for(uint i=0 ; i<myNotificationCount[msg.sender] ; i++){
+      notis[i] = notifications[msg.sender][i];
+     }
+
+     return notis ;
+    } 
+  
+
+     function initiate(address _commentatorId , string memory _requestId) external {
+       string memory name3 = profile[_commentatorId].name;
+
+       Requests memory req = allRequests[_requestId]  ;
+
+       Donation memory donation ;
+
+       donation.text = string(abi.encodePacked("Your Donation with " , name3 , " is pending" ));
+       donation.request = req ;
+       donation.commentatorId = _commentatorId;
+      
+       myPendingCount[msg.sender]++;
+       myPending[msg.sender][myPendingCount[msg.sender]] = donation ;
+
+       myPendingCount[_commentatorId]++;
+       myPending[_commentatorId][myPendingCount[_commentatorId]] = donation;
+     }
+
+    //      struct Chat{
+    //     string text;
+    //     address from;
+    //     address to;
+    //     uint time;
+    // }
+    function chat(address _from , address _to , string memory _text) external {
     }
 
 }
