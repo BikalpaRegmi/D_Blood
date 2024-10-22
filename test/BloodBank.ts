@@ -166,6 +166,9 @@ describe("BloodBank", () => {
       await expect(res).to.be.revertedWith("You have no Requests till now");
     });
 
+    it("Should delete the request if requestor wants", async () => {
+    })
+
     describe("comments",  () => {
       it("Should revert if there is no request existing", async () => {
         const length = contract.addComment("999", "hi");
@@ -268,6 +271,8 @@ describe("BloodBank", () => {
    })
 
   });
+
+
 
   
 })

@@ -36,16 +36,8 @@ contract BLOODBANK {
         Comment[] comments;
     }
 
-    struct Chat{
-        string text;
-        address from;
-        address to;
-        uint time;
-    }
-
     struct Donation{
         string text;
-        Chat[] chats;
         Requests request;
         address commentatorId;
     }
@@ -160,6 +152,7 @@ contract BLOODBANK {
     requestIds.push(_requestID);
     myRequestsCount[msg.sender]++;
     myRequests[msg.sender][myRequestsCount[msg.sender]] = request;
+    balances[msg.sender] -=100 ;
 
     myNotificationCount[msg.sender]++ ;
     notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Created a request Sucessfully"));
@@ -189,6 +182,32 @@ contract BLOODBANK {
 
       return myAllRequests ;
    }
+//2 be test
+   function _deleteRequest(string memory _reqId) internal {
+      delete allRequests[_reqId];
+
+      for (uint i = 0 ; i<requestIds.length ; i++){
+        if(keccak256(bytes(_reqId)) == keccak256(bytes(requestIds[i]))){
+            requestIds[i] = requestIds[requestIds.length -1 ];
+            requestIds.pop();
+            break;
+        }
+      }
+     
+     for(uint i=0 ;i<myRequestsCount[msg.sender] ; i++){
+        if(keccak256(bytes(myRequests[msg.sender][i].requestId)) == keccak256(bytes(_reqId))){
+       myRequests[msg.sender][i] = myRequests[msg.sender][myRequestsCount[msg.sender]];
+       delete myRequests[msg.sender][myRequestsCount[msg.sender]];
+       myRequestsCount[msg.sender]--;
+        }
+     }
+   }
+
+     //2 b tstd
+      function deleteRequest(string memory _reqId) external {
+      require(allRequests[_reqId].requestor ==msg.sender , "Only Requestor can deleteRequest");
+      _deleteRequest(_reqId);
+      }
 
     function addComment(string memory _requestId, string memory _comment) external {
         require(bytes(allRequests[_requestId].requestId).length != 0 , "The Request Doesn't Exists");  //bytes is required to check the length of the string u cant directly access the length in solidity by directly using string.length the bytes will change the single letters of string into hexadecimal or ascii and if there are no string letter then it will return 0x000 and if there is "ab" then it will return 0x6162. 
@@ -209,6 +228,7 @@ contract BLOODBANK {
     uint indexToRemove = type(uint).max; 
     bool exists = false;
 
+    // Find the index of the comment to remove
     for (uint i = 0; i < request.comments.length; i++) {
         if (request.comments[i].commentator == msg.sender) {
             exists = true;
@@ -216,7 +236,7 @@ contract BLOODBANK {
             break;
         }
     }
-
+    
     require(exists == true, "Your comment doesn't exist");
 
     // Replace the comment to remove with the last comment and pop
@@ -233,6 +253,7 @@ function getComments(string memory _id) external view returns(Comment[] memory){
 function transferBKS(address _id , uint _amount) external {
     require(balances[msg.sender] > 0 , "You dont have any tokens");
     require(balances[msg.sender] >= _amount , "You dont have enough tokens to send BKS");
+
 
     balances[_id] += _amount;
     balances[msg.sender] -= _amount;
@@ -285,11 +306,11 @@ function buyBks() external payable {
      return notis ;
     } 
   
-
+//2 b tested
      function initiate(address _commentatorId , string memory _requestId) external {
        string memory name3 = profile[_commentatorId].name;
 
-       Requests memory req = allRequests[_requestId]  ;
+       Requests storage req = allRequests[_requestId];
 
        Donation memory donation ;
 
@@ -304,13 +325,41 @@ function buyBks() external payable {
        myPending[_commentatorId][myPendingCount[_commentatorId]] = donation;
      }
 
-    //      struct Chat{
-    //     string text;
-    //     address from;
-    //     address to;
-    //     uint time;
-    // }
-    function chat(address _from , address _to , string memory _text) external {
-    }
+   function getAllPendingRequests() external view returns(Donation[] memory){
+     Donation[] memory pendingReqs = new Donation[](myPendingCount[msg.sender]);
+
+     for (uint i = 0 ; i<myPendingCount[msg.sender] ; i++ ){
+        pendingReqs[i] = myPending[msg.sender][i+1];
+     }
+
+     return pendingReqs ;
+
+   }
+
+  function releaseBks(address _donor , string memory _reqId) external {
+    Requests memory request = allRequests[_reqId];
+    require(bytes(request.requestId).length != 0 , "req doesnt exists");
+    require(request.requestor ==msg.sender , "only requestor can release");
+
+    balances[owner] += 3;
+    balances[_donor] += 97;
+
+    myNotificationCount[msg.sender]++;
+   notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Got blood and released BKS to " , profile[_donor].name ));
+
+   myNotificationCount[_donor]++;
+   notifications[_donor][myNotificationCount[_donor]] = string(abi.encodePacked("Donated Blood and got BKS from " , profile[msg.sender].name));
+
+   myNotificationCount[owner]++;
+   notifications[owner][myNotificationCount[owner]] = string(abi.encodePacked("Gained 3BKS from transactions for " , _donor));
+
+   activitiesCount[msg.sender]++;
+   activities[msg.sender][activitiesCount[msg.sender]] = string(abi.encodePacked("Got blood by " , profile[_donor].name));
+
+   activitiesCount[_donor]++;
+   activities[_donor][activitiesCount[_donor]] = string(abi.encodePacked("Helped " , profile[msg.sender].name));
+   
+   _deleteRequest(_reqId);
+}
 
 }
