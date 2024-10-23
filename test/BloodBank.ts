@@ -101,7 +101,7 @@ describe("BloodBank", () => {
   });
 
   describe("Requests", () => {
-    const Id: string = Date.now.toString();
+    const Id: string = Date.now().toString();
     const detail: string = "Hii i am suffering from deficiency of B +ve blood plz help me.";
     const image: string = "image.jpeg";
     
@@ -167,9 +167,34 @@ describe("BloodBank", () => {
     });
 
     it("Should delete the request if requestor wants", async () => {
+      const newId: string = Date.now().toString();
+      const detail: string =
+      "Hii i am suffering from deficiency of B +ve blood plz help.";
+      const image: string = "image.jpeg";
+
+      await contract.connect(addr2).buyBks({ value: ethers.parseEther("0.002") });
+       await contract
+        .connect(addr2)
+         .CreateRequest(newId, detail, image);
+      
+      expect((await contract.getAllRequests()).length).to.be.eq(2);
+
+      await contract.connect(addr2).deleteRequest(Id);
+
+      expect(await contract.balances(addr2)).to.eq(97);
+
+      expect((await contract.connect(addr2).getAllRequests()).length).to.eq(1);
+
+      expect(await contract.myRequestsCount(addr2)).to.eq(1);
+
+      const myData = await contract.connect(addr2).myRequests(addr2, 1);
+
+      expect(myData.requestId).to.eq(newId);
+      expect(myData.details).to.eq(detail);
     })
 
-    describe("comments",  () => {
+    describe("comments", () => {
+      
       it("Should revert if there is no request existing", async () => {
         const length = contract.addComment("999", "hi");
         expect(length).to.be.revertedWith("The Request Doesn't Exists");
@@ -273,6 +298,84 @@ describe("BloodBank", () => {
   });
 
 
+  describe("Initiate and pending requests", async () => {
+    beforeEach(async () => {
+      await contract.connect(addr1).buyBks({ value: ethers.parseEther("0.001") });
+      await contract.connect(addr2).buyBks({ value: ethers.parseEther("0.001") });
+      await contract.CreateRequest('123', "Help", "image.png");
+      await contract.connect(addr1).addComment('123', "Intrested");
+      await contract.initiate(addr1, '123');
+    });
+    
+    it("Should increase the pending requests", async () => {
+      const requestorPend = await contract.getAllPendingRequests();
+      const commentatorPend = await contract.connect(addr1).getAllPendingRequests();
+
+      expect((requestorPend && commentatorPend).length).to.eq(1);
+      expect(await contract.connect(addr1).myPendingCount(addr1)).to.eq(1);
+    });
+
+    it("Should match the text and id", async () => {
+      const res = await contract.connect(addr1).getAllPendingRequests();
+      expect(res[0].text).to.eq("Your Donation with Bikalpa is pending");
+      expect(res[0].requestId).to.eq("123");
+    })
+     
+      it("Should revert if reqId doesnt match", async () => {        
+        await expect(contract.releaseBks(addr1, "3")).to.be.revertedWith(
+          "req doesnt exists"
+        ); 
+      })
+
+      it("Should Only requestor release BKS", async () => {
+        await expect(
+          contract.connect(addr2).releaseBks(addr1, "123")
+        ).to.be.revertedWith("only requestor can release");
+      });
+
+    it("Should increase the balance of owner and doner", async () => {
+      const beforeBalanceDoner = await contract.balances(addr1);
+      const beforeBalanceOwner = await contract.balances(owner);
+
+      await contract.releaseBks(addr1, "123");
+
+      expect(await contract.balances(addr1)).to.eq(Number(beforeBalanceDoner) + 97);
+      expect(await contract.balances(owner)).to.eq(
+        Number(beforeBalanceOwner) + 3
+      );
+    });
+      
+
+      it("Should delete myPending ", async () => {
+        
+
+        await contract.releaseBks(addr1, '123');
+      
+        expect(await contract.myPendingCount(owner)).to.eq(0);
+        expect(await contract.myPendingCount(addr1)).to.eq(0) ;
+        
+      })
+
+    it("Should delete the request ", async () => {
+      const allReq = (await contract.getAllRequests()).length;
+
+      await contract.releaseBks(addr1, "123");
+        
+      expect((await contract.getAllRequests()).length).to.eq(allReq - 1);
+    });
+
+    it("Should delete my request ", async () => {
+      const allReq = (await contract.getAllMyRequests()).length;
+
+      expect((await contract.getAllMyRequests()).length).to.eq(allReq);
+      await contract.releaseBks(addr1, "123");
+      
+      await expect(contract.getAllMyRequests()).to.be.revertedWith(
+        "You have no Requests till now"
+      );
+    });
+    
+  });
 
   
 })

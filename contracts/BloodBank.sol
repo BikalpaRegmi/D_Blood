@@ -38,7 +38,7 @@ contract BLOODBANK {
 
     struct Donation{
         string text;
-        Requests request;
+        string requestId;
         address commentatorId;
     }
 
@@ -182,9 +182,8 @@ contract BLOODBANK {
 
       return myAllRequests ;
    }
-//2 be test
+
    function _deleteRequest(string memory _reqId) internal {
-      delete allRequests[_reqId];
 
       for (uint i = 0 ; i<requestIds.length ; i++){
         if(keccak256(bytes(_reqId)) == keccak256(bytes(requestIds[i]))){
@@ -194,19 +193,23 @@ contract BLOODBANK {
         }
       }
      
-     for(uint i=0 ;i<myRequestsCount[msg.sender] ; i++){
+     for(uint i=1 ;i<=myRequestsCount[msg.sender] ; i++){
         if(keccak256(bytes(myRequests[msg.sender][i].requestId)) == keccak256(bytes(_reqId))){
        myRequests[msg.sender][i] = myRequests[msg.sender][myRequestsCount[msg.sender]];
        delete myRequests[msg.sender][myRequestsCount[msg.sender]];
-       myRequestsCount[msg.sender]--;
+       myRequestsCount[msg.sender]-=1;
+       break;
+        }else{
+            console.log("Req id not found");
         }
      }
+      delete allRequests[_reqId];
    }
 
-     //2 b tstd
       function deleteRequest(string memory _reqId) external {
       require(allRequests[_reqId].requestor ==msg.sender , "Only Requestor can deleteRequest");
       _deleteRequest(_reqId);
+      balances[msg.sender] += 97 ;
       }
 
     function addComment(string memory _requestId, string memory _comment) external {
@@ -310,26 +313,26 @@ function buyBks() external payable {
      function initiate(address _commentatorId , string memory _requestId) external {
        string memory name3 = profile[_commentatorId].name;
 
-       Requests storage req = allRequests[_requestId];
+       Requests memory req = allRequests[_requestId];
 
        Donation memory donation ;
 
-       donation.text = string(abi.encodePacked("Your Donation with " , name3 , " is pending" ));
-       donation.request = req ;
-       donation.commentatorId = _commentatorId;
+       donation.text = string(abi.encodePacked("Your Donation with " , name3 , " is pending" )) ;
+       donation.requestId = req.requestId ;
+       donation.commentatorId = _commentatorId ; 
       
        myPendingCount[msg.sender]++;
        myPending[msg.sender][myPendingCount[msg.sender]] = donation ;
 
        myPendingCount[_commentatorId]++;
-       myPending[_commentatorId][myPendingCount[_commentatorId]] = donation;
+       myPending[_commentatorId][myPendingCount[_commentatorId]] = donation ;
      }
 
    function getAllPendingRequests() external view returns(Donation[] memory){
-     Donation[] memory pendingReqs = new Donation[](myPendingCount[msg.sender]);
+     Donation[] memory pendingReqs = new Donation[](myPendingCount[msg.sender]) ;
 
      for (uint i = 0 ; i<myPendingCount[msg.sender] ; i++ ){
-        pendingReqs[i] = myPending[msg.sender][i+1];
+        pendingReqs[i] = myPending[msg.sender][i +1];
      }
 
      return pendingReqs ;
@@ -339,10 +342,32 @@ function buyBks() external payable {
   function releaseBks(address _donor , string memory _reqId) external {
     Requests memory request = allRequests[_reqId];
     require(bytes(request.requestId).length != 0 , "req doesnt exists");
-    require(request.requestor ==msg.sender , "only requestor can release");
-
+    require(request.requestor == msg.sender , "only requestor can release");
     balances[owner] += 3;
     balances[_donor] += 97;
+
+    for (uint i = 1 ; i<=myPendingCount[msg.sender] ; i++){
+
+        if(keccak256(bytes(myPending[msg.sender][i].requestId)) == keccak256(bytes(_reqId))){
+            myPending[msg.sender][i] = myPending[msg.sender][myPendingCount[msg.sender]];
+            delete myPending[msg.sender][myPendingCount[msg.sender]];
+            myPendingCount[msg.sender]-=1;
+            break ;
+        }else{
+            console.log("Request not found");
+        }
+    }
+
+    for (uint i = 1 ; i<=myPendingCount[_donor] ; i++){
+        if(keccak256(bytes(myPending[_donor][i].requestId)) == keccak256(bytes(_reqId))){
+            myPending[_donor][i] = myPending[_donor][myPendingCount[_donor]];
+            delete myPending[_donor][myPendingCount[_donor]];
+            myPendingCount[_donor]-=1;
+            break ;
+        }else{
+            console.log("Request not found");
+        }
+    }
 
     myNotificationCount[msg.sender]++;
    notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Got blood and released BKS to " , profile[_donor].name ));
