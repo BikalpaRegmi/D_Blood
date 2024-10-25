@@ -21,6 +21,7 @@ contract BLOODBANK {
        string gender;
        string medicalReport ;
        uint emergencyContact ;
+       string myAddress ;
     }
 
     struct Comment {
@@ -86,9 +87,9 @@ contract BLOODBANK {
         balances[msg.sender] = totalBKSSupply;
     }
     
-    function LoginUser( string memory _name , string memory _bloodType , string memory _dob , string memory _gender , string memory _MR , uint  _EC) external{
+    function LoginUser( string memory _name , string memory _bloodType , string memory _dob , string memory _gender , string memory _MR , uint  _EC , string memory _addr) external{
 
-     LoginDetails memory loginDetails = LoginDetails(msg.sender , _name , _bloodType , _dob , _gender , _MR , _EC);
+     LoginDetails memory loginDetails = LoginDetails(msg.sender , _name , _bloodType , _dob , _gender , _MR , _EC , _addr);
 
       profile[msg.sender] = loginDetails;
 
@@ -96,7 +97,7 @@ contract BLOODBANK {
 
     }
 
-    function EditMyProfile( string memory _name , string memory _bloodType , string memory _dob , string memory _gender , string memory _MR , uint  _EC) external{
+    function EditMyProfile( string memory _name , string memory _bloodType , string memory _dob , string memory _gender , string memory _MR , uint  _EC , string memory _adr) external{
      LoginDetails storage loginDetails = profile[msg.sender];
 
      require(loginDetails.id == msg.sender , "You are not the profile owner");
@@ -136,6 +137,13 @@ contract BLOODBANK {
         loginDetails.emergencyContact = _EC;
         myNotificationCount[msg.sender]++;
         notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed Contact to " , _EC , " Sucessfully"));
+
+    }
+
+    if(bytes(_adr).length > 0){
+        loginDetails.myAddress = _adr;
+        myNotificationCount[msg.sender]++;
+                notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed Address to " , _adr , " Sucessfully"));
 
     }
     }

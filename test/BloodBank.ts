@@ -13,15 +13,15 @@ describe("BloodBank", () => {
   const gender: string = "male";
   const medicalReport: string =
   "https://images.drlogy.com/assets/uploads/lab/image/cbc-test-report-format-example-sample-template-drlogy-lab-report.webp";
-  
   const emergencyContact: number = 9899999999;
+  const addr = "Hetauda-4 , kamaldada";
   
   
   beforeEach(async () => {
     const contractFactory: any = await ethers.getContractFactory("BLOODBANK");
     [owner, addr1, addr2] = await ethers.getSigners();
     contract = await contractFactory.deploy();
-    transaction = await contract.connect(addr1).LoginUser( name, bloodType, dateOfBirth, gender, medicalReport , emergencyContact);
+    transaction = await contract.connect(addr1).LoginUser( name, bloodType, dateOfBirth, gender, medicalReport , emergencyContact , addr);
   });
   
  
@@ -51,11 +51,12 @@ describe("BloodBank", () => {
       expect(profile.gender).to.eq(gender);
       expect(profile.medicalReport).to.eq(medicalReport);
       expect(profile.emergencyContact).to.eq(emergencyContact);
+      expect(profile.myAddress).to.eq(addr);
     });
 
     it("Should edit the profiles", async () => {
       const changedGender = "Female"
-      await contract.connect(addr1).EditMyProfile("", "", "",changedGender , "", 0);
+      await contract.connect(addr1).EditMyProfile("", "", "",changedGender , "", 0 , '');
       const profile = await contract.profile(addr1);
       expect(profile.name).to.eq(name);
       expect(profile.gender).to.eq(changedGender);
@@ -247,7 +248,7 @@ describe("BloodBank", () => {
 
   describe("Notifications", () => {
     beforeEach(async () => {
-      await contract.connect(addr1).EditMyProfile("", "B -ve", '', '', '', 0);
+      await contract.connect(addr1).EditMyProfile("", "B -ve", '', '', '', 0 , '');
       await contract.CreateRequest(Date.now().toString(), "Hi i need blood", "img");
       await contract
         .connect(addr2)

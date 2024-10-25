@@ -166,19 +166,23 @@ const Login = () => {
                     </div>
                   </div>
 
-                  <div>
+                  <div className="flex gap-5">
                     <label className="text-base font-medium text-gray-900">
                       {" "}
-                      Blood Type
+                      Blood Type : 
                     </label>
-                    <div className="mt-2.5 relative text-gray-400 focus-within:text-gray-600">
-                      <input
-                        type="text"
-                        name=""
-                        id=""
-                        placeholder="Enter your Blood Type"
-                        className="block w-full py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
-                      />
+                    <div className=" relative text-black border-2 focus-within:text-gray-600">
+                      <select name="" id="">
+                        <option value="">Select blood type</option>
+                        <option value="">O +ve</option>
+                        <option value="">O -ve</option>
+                        <option value="">A -ve</option>
+                        <option value="">A +ve</option>
+                        <option value="">B -ve</option>
+                        <option value="">B +ve</option>
+                        <option value="">AB -ve</option>
+                        <option value="">AB +ve</option>
+                      </select>
                     </div>
                   </div>
 
@@ -266,16 +270,16 @@ const Login = () => {
               </div>
 
               <p className="mt-5 text-sm text-gray-600">
-                I agree to all {" "}
+                I agree to all{" "}
                 <a
-                                  href="https://en.wikipedia.org/wiki/Privacy_policy"
-                                  target="_blank"
+                  href="https://en.wikipedia.org/wiki/Privacy_policy"
+                  target="_blank"
                   title=""
                   className="text-blue-600 transition-all duration-200 hover:underline hover:text-blue-700"
                 >
                   Privacy Policy
                 </a>{" "}
-                & {" "}
+                &{" "}
                 <a
                   href="https://en.wikipedia.org/wiki/Terms_of_service"
                   target="_blank"
