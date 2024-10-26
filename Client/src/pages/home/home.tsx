@@ -4,12 +4,15 @@ import { FaRegComment } from "react-icons/fa";
 import { CiShare2 } from "react-icons/ci";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import Modal from "../../components/deletePostModal";
 
 
 const HomePage = () => {
   const { account } = useEthereum();
   const [menu, setMenu] = useState<boolean>(false);
   const navigate = useNavigate();
+    const [open, setOpen] = useState<boolean>(false);
+
   return (
     <div className="relative">
       <RequestPost />
@@ -41,12 +44,45 @@ const HomePage = () => {
                   <button className="w-28 bg-orange-900 text-white cursor-pointer hover:text-slate-200 mb-0.5 ">
                     View Profile
                   </button>
-                  <button className="w-28 bg-gray-900 text-white cursor-pointer hover:text-slate-200 mb-0.5 ">
+                  <button onClick={()=>setOpen(true)} className="w-28 bg-gray-900 text-white cursor-pointer hover:text-slate-200 mb-0.5 ">
                     Delete Post
                   </button>
-                  <button onClick={()=>navigate(`/post/1`)} className="w-28 bg-blue-900 text-white cursor-pointer hover:text-slate-200 mb-0.5 ">
-                     Details
+                  <button
+                    onClick={() => navigate(`/post/1`)}
+                    className="w-28 bg-blue-900 text-white cursor-pointer hover:text-slate-200 mb-0.5 "
+                  >
+                    Details
                   </button>
+                  <Modal open={open} onClose={() => setOpen(false)}>
+                    <div className="text-center w-56">
+                      <div className="mx-auto my-4 w-48">
+                        <h3 className="text-lg font-black text-orange-700">
+                          Confirm Delete Post
+                        </h3>
+                        <p className="text-sm text-gray-500">
+                         Deleting Request Post will costs you 3 BKS as a penalty !
+                          
+                        </p>
+                      </div>
+                      <div className="flex gap-4">
+                        <button
+                          className="btn btn-danger hover:bg-slate-50 text-red-700 font-bold w-full"
+                          onClick={() => {
+                            navigate("/Disconnect");
+                            setOpen(false);
+                          }}
+                        >
+                          Disconnect
+                        </button>
+                        <button
+                          className="btn font-semibold hover:bg-slate-50 text-green-600 btn-light w-full"
+                          onClick={() => setOpen(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  </Modal>
                 </div>
               ) : (
                 ""
@@ -71,12 +107,18 @@ const HomePage = () => {
               className="w-full border-b-2 border-red-600 h-[400px]"
             />
           </div>
-          <div onClick={()=>navigate(`/post/1`)} className="comments text-sm ml-auto w-24 pr-1 text-slate-500 hover:underline cursor-pointer">
+          <div
+            onClick={() => navigate(`/post/1`)}
+            className="comments text-sm ml-auto w-24 pr-1 text-slate-500 hover:underline cursor-pointer"
+          >
             2 Comments
           </div>
 
           <div className="bottom flex justify-around">
-            <button onClick={()=>navigate(`/post/1`)} className="bg-red-700 w-44  md:w-64 text-lg flex justify-around  text-white">
+            <button
+              onClick={() => navigate(`/post/1`)}
+              className="bg-red-700 w-44  md:w-64 text-lg flex justify-around  text-white"
+            >
               Comment <FaRegComment className="text-xl mt-1" />
             </button>
             <button className="bg-green-800 flex justify-around w-20  md:w-40 text-lg text-white">

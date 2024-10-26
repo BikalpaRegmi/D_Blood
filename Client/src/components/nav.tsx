@@ -88,19 +88,19 @@ const Nav = () => {
 
               <div className="hidden lg:flex lg:items-center lg:ml-auto lg:space-x-10">
                 <span className="flex gap-1 bg-red-700 rounded-lg">
-                
                   <input
                     type="text"
                     className="text-base border-2 font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
-                    />
-                   <FaSearch className="text-xl cursor-pointer mt-1 pr-1 text-white"/>
-                    </span>
+                  />
+                  <FaSearch className="text-xl cursor-pointer mt-1 pr-1 text-white" />
+                </span>
 
                 <a
-                  href="#"
+                  href=""
                   title=""
                   className="text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
-                onClick={()=>navigate('/notifications')}>
+                  onClick={() => navigate("/notifications")}
+                >
                   {" "}
                   Notifications{" "}
                 </a>
@@ -109,24 +109,27 @@ const Nav = () => {
                   href=""
                   title=""
                   className="text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
+                  onClick={() => navigate("/myPendingRequests")}
                 >
                   {" "}
                   Pending Donations{" "}
                 </a>
 
                 <a
-                  href="#"
+                  href=""
                   title=""
                   className="text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
-                onClick={()=>navigate('/myProfile')}>
+                  onClick={() => navigate("/myProfile")}
+                >
                   {" "}
                   Profile{" "}
                 </a>
 
                 <a
-                  href="#"
+                  href=""
                   title=""
                   className="text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
+                  onClick={() => navigate("/Token")}
                 >
                   {" "}
                   BKS{" "}
@@ -134,7 +137,7 @@ const Nav = () => {
               </div>
 
               <a
-                href="#"
+                href=""
                 title=""
                 className="items-center justify-center hidden px-4 py-3 ml-10 text-base font-semibold text-white transition-all duration-200 bg-red-600 border border-transparent rounded-md lg:inline-flex hover:bg-red-700 focus:bg-blue-700"
                 role="button"
@@ -149,25 +152,26 @@ const Nav = () => {
                 <div className="flow-root">
                   <div className="flex flex-col px-6 -my-2 space-y-1">
                     <a
-                      href="#"
+                      href=""
                       title=""
                       className="inline-flex py-2 text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
-                    onClick={()=>navigate('/notifications')}>
+                      onClick={() => navigate("/notifications")}
+                    >
                       {" "}
                       Notifications{" "}
                     </a>
 
                     <a
-                      href="#"
                       title=""
                       className="inline-flex py-2 text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
+                      onClick={() => navigate("/myPendingRequests")}
                     >
                       {" "}
                       Pending Donations{" "}
                     </a>
 
                     <a
-                      href="#"
+                      onClick={() => navigate(`/myProfile`)}
                       title=""
                       className="inline-flex py-2 text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                     >
@@ -176,9 +180,9 @@ const Nav = () => {
                     </a>
 
                     <a
-                      href="#"
                       title=""
                       className="inline-flex py-2 text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
+                      onClick={() => navigate("/Token")}
                     >
                       {" "}
                       BKS{" "}
@@ -187,7 +191,6 @@ const Nav = () => {
                 </div>
                 <div className="px-6 mt-6">
                   <a
-                    href="#"
                     title=""
                     className="inline-flex justify-center px-4 py-3 text-base font-semibold text-white transition-all duration-200 bg-red-600 border border-transparent rounded-md tems-center hover:bg-blue-700 focus:bg-blue-700"
                     role="button"
