@@ -1,10 +1,38 @@
+import axios from "axios";
+import React, { useState } from "react";
 
 const Login = () => {
-
+  const [file, setFile] = useState<File | null>(null);
   //API Key: cc64e4a6ee3ea20556a8
 // API Secret: 59d57bf36a37b0239949fcab15d6e161041961fbb3a22f46a4a9def0a0d02341
 // JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIzNGQ0MmEyNS03YmZlLTRhN2EtODVmNi0yZjA1OTUyODFlYTIiLCJlbWFpbCI6ImJpa2FscGFyZWdtaWh0ZDNAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6ImNjNjRlNGE2ZWUzZWEyMDU1NmE4Iiwic2NvcGVkS2V5U2VjcmV0IjoiNTlkNTdiZjM2YTM3YjAyMzk5NDlmY2FiMTVkNmUxNjEwNDE5NjFmYmIzYTIyZjQ2YTRhOWRlZjBhMGQwMjM0MSIsImV4cCI6MTc2MTQ3NTA2OH0._e-N3ODmlTM22f6IODQqqYLT2SxE62RI9xVxomN0fdU
-
+  // aayexi ipfs ma store gar medical report voli sabai development vyaunu prxa
+  
+  const handleSubmit = async(e:React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+try {
+  const fileData = new FormData(); //it is required to send images,documents to interact with server or ipfs
+  if (file != null) {
+    fileData.append('file', file); //required for further fetch or axios
+    const res = await axios.post(
+      "https://api.pinata.cloud/pinning/pinFileToIPFS",
+      fileData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          pinata_api_key: import.meta.env.VITE_Pinata_api_key,
+          pinata_secret_api_key: import.meta.env.VITE_Pinata_secret_api_key,
+        },
+      }
+    );
+    const fileUrl = 'https://gateway.pinata.cloud/ipfs/' + res.data.IpfsHash;
+    console.log(fileUrl);
+  }
+  
+} catch (error) {
+  console.log(error)
+    }
+  }
   return (
     <div>
       <section className="bg-white">
@@ -38,9 +66,9 @@ const Login = () => {
                         fill="currentColor"
                       >
                         <path
-                          fill-rule="evenodd"
+                          fillRule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd"
+                          clipRule="evenodd"
                         ></path>
                       </svg>
                     </div>
@@ -58,9 +86,9 @@ const Login = () => {
                         fill="currentColor"
                       >
                         <path
-                          fill-rule="evenodd"
+                          fillRule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd"
+                          clipRule="evenodd"
                         ></path>
                       </svg>
                     </div>
@@ -78,9 +106,9 @@ const Login = () => {
                         fill="currentColor"
                       >
                         <path
-                          fill-rule="evenodd"
+                          fillRule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd"
+                          clipRule="evenodd"
                         ></path>
                       </svg>
                     </div>
@@ -98,9 +126,9 @@ const Login = () => {
                         fill="currentColor"
                       >
                         <path
-                          fill-rule="evenodd"
+                          fillRule="evenodd"
                           d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                          clip-rule="evenodd"
+                          clipRule="evenodd"
                         ></path>
                       </svg>
                     </div>
@@ -120,7 +148,7 @@ const Login = () => {
                 Create Profile to D Blood
               </h2>
 
-              <form action="#" method="POST" className="mt-8">
+              <form onSubmit={handleSubmit} className="mt-8">
                 <div className="space-y-5">
                   <div>
                     <label className="text-base font-medium text-gray-900">
@@ -137,9 +165,9 @@ const Login = () => {
                           stroke="currentColor"
                         >
                           <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth="2"
                             d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                           />
                         </svg>
@@ -174,7 +202,7 @@ const Login = () => {
                   <div className="flex gap-5">
                     <label className="text-base font-medium text-gray-900">
                       {" "}
-                      Blood Type : 
+                      Blood Type :
                     </label>
                     <div className=" relative text-black border-2 focus-within:text-gray-600">
                       <select name="" id="">
@@ -217,9 +245,12 @@ const Login = () => {
                         type="file"
                         name=""
                         id=""
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setFile(e.target.files && e.target.files[0])
+                        }
                         placeholder="Enter your Number"
                         className="block w-full py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
-                      />
+                      /> <button type="submit">Upload</button>
                     </div>
                   </div>
 
