@@ -1,10 +1,42 @@
+import { useEffect, useState } from "react";
 import { useEthereum } from "../../context/contractContext"
 import MyPosts from "./myPost";
 
+interface MyDetail {
+  id: string | null;
+  name: string | null;
+  bloodType: string | null;
+  dateOfBirth: null | string;
+  gender: null | string;
+  medicalReport:   string |undefined; 
+  emergencyContact: null | string;
+  myAddress: null | string;
+
+}
 
 const MyDetails = () => {
-      const { account } = useEthereum();
-     
+  const { contract, account } = useEthereum();
+  const [myDetail, setMyDetail] = useState<MyDetail>({
+    id: null,
+    name: null,
+    bloodType: null,
+    dateOfBirth: null,
+    gender: null,
+    medicalReport: undefined,
+    emergencyContact: null,
+    myAddress:null,
+  })
+  
+  const getAccountDetail = async () => {
+    const data = await contract?.profile(account);
+    setMyDetail(data);
+  }
+  
+  useEffect(() => {
+    if(account && contract)
+      getAccountDetail();
+  }, [account, contract]);
+
   return (
     <div>
       
@@ -14,11 +46,11 @@ const MyDetails = () => {
             <div className="col-span-4 sm:col-span-3">
               <div className="bg-white shadow rounded-lg p-6">
                 <div className="flex flex-col items-center">
-                  <h1 className="text-xl font-bold">John Doe</h1>
-                  <p className="text-gray-700">{`${account?.slice(
+                  <h1 className="text-xl font-bold">{myDetail.name }</h1>
+                  <p className="text-gray-700">{`${myDetail.id?.slice(
                     0,
                     3
-                  )}...${account?.slice(account.length - 3)}`}</p>
+                  )}...${myDetail.id?.slice(myDetail.id.length - 3)}`}</p>
                   <div className="mt-6 flex flex-wrap gap-4 justify-center">
                     <a
                       href="#"
@@ -40,20 +72,20 @@ const MyDetails = () => {
                     Details
                   </span>
                   <ul>
-                    <li className="mb-2">BloodType : </li>
-                    <li className="mb-2">Date Of Birth : </li>
-                    <li className="mb-2">Gender : </li>
-                    <li className="mb-2">Emergency Contact : </li>
-                    <li className="mb-2">
+                    <li className="mb-2">BloodType : {myDetail.bloodType }</li>
+                    <li className="mb-2">Date Of Birth : {myDetail.dateOfBirth }</li>
+                    <li className="mb-2">Gender : {myDetail.gender}</li>
+                    <li className="mb-2">Emergency Contact : { Number(myDetail.emergencyContact) } </li>
+                    <li className="mb-2 bg-slate-100">
                       Medical Report :{" "}
                       <a
-                        href="https://images.pexels.com/photos/590041/pexels-photo-590041.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                        href={myDetail.medicalReport}
                         target="_blank"
                       >
                         <img
-                          src="https://images.pexels.com/photos/590041/pexels-photo-590041.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
+                          src={myDetail.medicalReport}
                           alt=""
-                          className="mt-2"
+                          className="mt-2 mx-auto"
                         />
                       </a>
                     </li>

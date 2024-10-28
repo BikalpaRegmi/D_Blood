@@ -1,20 +1,53 @@
 import axios from "axios";
 import React, { useState } from "react";
+import { useEthereum } from "../../context/contractContext";
+import { useNavigate } from "react-router-dom";
+  import { ToastContainer, toast } from "react-toastify";
+  import "react-toastify/dist/ReactToastify.css";
+
+interface loginDetailProps {
+  id: string | null;
+  name: string | null;
+  bloodType: string | null;
+  dateOfBirth: null | string;
+  gender: null | string;
+  medicalReport: null | string;
+  emergencyContact: null | string;
+  myAddress: null | string;
+}
 
 const Login = () => {
   const [file, setFile] = useState<File | null>(null);
-  //API Key: cc64e4a6ee3ea20556a8
-// API Secret: 59d57bf36a37b0239949fcab15d6e161041961fbb3a22f46a4a9def0a0d02341
-// JWT: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIzNGQ0MmEyNS03YmZlLTRhN2EtODVmNi0yZjA1OTUyODFlYTIiLCJlbWFpbCI6ImJpa2FscGFyZWdtaWh0ZDNAZ21haWwuY29tIiwiZW1haWxfdmVyaWZpZWQiOnRydWUsInBpbl9wb2xpY3kiOnsicmVnaW9ucyI6W3siZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiRlJBMSJ9LHsiZGVzaXJlZFJlcGxpY2F0aW9uQ291bnQiOjEsImlkIjoiTllDMSJ9XSwidmVyc2lvbiI6MX0sIm1mYV9lbmFibGVkIjpmYWxzZSwic3RhdHVzIjoiQUNUSVZFIn0sImF1dGhlbnRpY2F0aW9uVHlwZSI6InNjb3BlZEtleSIsInNjb3BlZEtleUtleSI6ImNjNjRlNGE2ZWUzZWEyMDU1NmE4Iiwic2NvcGVkS2V5U2VjcmV0IjoiNTlkNTdiZjM2YTM3YjAyMzk5NDlmY2FiMTVkNmUxNjEwNDE5NjFmYmIzYTIyZjQ2YTRhOWRlZjBhMGQwMjM0MSIsImV4cCI6MTc2MTQ3NTA2OH0._e-N3ODmlTM22f6IODQqqYLT2SxE62RI9xVxomN0fdU
-  // aayexi ipfs ma store gar medical report voli sabai development vyaunu prxa
-  
-  const handleSubmit = async(e:React.FormEvent<HTMLFormElement>) => {
+  const [loginDetails, setLoginDetails] = useState<loginDetailProps>({
+    id: null,
+    name: null,
+    bloodType: null,
+    dateOfBirth: null,
+    gender: null,
+    medicalReport: null,
+    emergencyContact: null,
+    myAddress: null,
+  });
+  const { contract } = useEthereum();
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-try {
-  const fileData = new FormData(); //it is required to send images,documents to interact with server or ipfs
-  if (file != null) {
-    fileData.append('file', file); //required for further fetch or axios
-    const res = await axios.post(
+    toast("Creating Profile", {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+      theme: "dark",
+    });
+    const fileData: FormData = new FormData();
+    if (file != null) {
+      fileData.append("file", file);
+    }
+    const res: any = await axios.post(
       "https://api.pinata.cloud/pinning/pinFileToIPFS",
       fileData,
       {
@@ -25,14 +58,39 @@ try {
         },
       }
     );
-    const fileUrl = 'https://gateway.pinata.cloud/ipfs/' + res.data.IpfsHash;
-    console.log(fileUrl);
-  }
+    const imageUrl: string =
+      "https://gateway.pinata.cloud/ipfs/" + res.data.IpfsHash;
+    console.log(imageUrl);
+
+    const updatedLoginDetails = {
+      ...loginDetails,
+      medicalReport: imageUrl,
+    };
+
+   const transaction =  await contract?.LoginUser(
+      updatedLoginDetails.name,
+      updatedLoginDetails.bloodType,
+      updatedLoginDetails.dateOfBirth,
+      updatedLoginDetails.gender,
+      updatedLoginDetails.medicalReport,
+      updatedLoginDetails.emergencyContact,
+      updatedLoginDetails.myAddress
+   );
   
-} catch (error) {
-  console.log(error)
-    }
-  }
+    await transaction.wait();
+    
+     navigate('/');
+  };
+
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    setLoginDetails((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
   return (
     <div>
       <section className="bg-white">
@@ -175,7 +233,9 @@ try {
 
                       <input
                         type="text"
-                        name=""
+                        name="name"
+                        required
+                        onChange={handleChange}
                         id=""
                         placeholder="Enter your full name"
                         className="block w-full py-4 pl-10 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
@@ -191,7 +251,9 @@ try {
                     <div className="mt-2.5 relative text-gray-400 focus-within:text-gray-600">
                       <input
                         type="date"
-                        name=""
+                        required
+                        name="dateOfBirth"
+                        onChange={handleChange}
                         id=""
                         placeholder="Enter email to get started"
                         className="block w-full py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
@@ -205,16 +267,21 @@ try {
                       Blood Type :
                     </label>
                     <div className=" relative text-black border-2 focus-within:text-gray-600">
-                      <select name="" id="">
+                      <select
+                        name="bloodType"
+                        required
+                        id=""
+                        onChange={handleChange}
+                      >
                         <option value="">Select blood type</option>
-                        <option value="">O +ve</option>
-                        <option value="">O -ve</option>
-                        <option value="">A -ve</option>
-                        <option value="">A +ve</option>
-                        <option value="">B -ve</option>
-                        <option value="">B +ve</option>
-                        <option value="">AB -ve</option>
-                        <option value="">AB +ve</option>
+                        <option value="O +ve">O +ve</option>
+                        <option value="O -ve">O -ve</option>
+                        <option value="A -ve">A -ve</option>
+                        <option value="A +ve">A +ve</option>
+                        <option value="B -ve">B -ve</option>
+                        <option value="B +ve">B +ve</option>
+                        <option value="AB -ve">AB -ve</option>
+                        <option value="AB +ve">AB +ve</option>
                       </select>
                     </div>
                   </div>
@@ -222,14 +289,16 @@ try {
                   <div>
                     <label className="text-base font-medium text-gray-900">
                       {" "}
-                      Emergency Contact
+                      Address
                     </label>
                     <div className="mt-2.5 relative text-gray-400 focus-within:text-gray-600">
                       <input
-                        type="number"
-                        name=""
+                        type="text"
+                        name="myAddress"
+                        onChange={handleChange}
+                        required
                         id=""
-                        placeholder="Enter your Number"
+                        placeholder="Enter your Address"
                         className="block w-full py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
                       />
                     </div>
@@ -248,12 +317,29 @@ try {
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                           setFile(e.target.files && e.target.files[0])
                         }
+                        required
                         placeholder="Enter your Number"
                         className="block w-full py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
-                      /> <button type="submit">Upload</button>
+                      />
                     </div>
                   </div>
-
+                  <div>
+                    <label className="text-base font-medium text-gray-900">
+                      {" "}
+                      Emergency Contact
+                    </label>
+                    <div className="mt-2.5 relative text-gray-400 focus-within:text-gray-600">
+                      <input
+                        type="number"
+                        onChange={handleChange}
+                        required
+                        name="emergencyContact"
+                        id=""
+                        placeholder="Enter your Number"
+                        className="block w-full py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
+                      />
+                    </div>
+                  </div>
                   <div>
                     <label className="text-base font-medium text-gray-900">
                       {" "}
@@ -265,6 +351,9 @@ try {
                           type="radio"
                           name="gender"
                           id=""
+                          value={"female"}
+                          checked={loginDetails.gender === "female"}
+                          onChange={handleChange}
                           placeholder="Enter your Blood Type"
                           className="block  py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
                         />
@@ -275,6 +364,9 @@ try {
                           type="radio"
                           name="gender"
                           id=""
+                          checked={loginDetails.gender === "male"}
+                          value={"male"}
+                          onChange={handleChange}
                           placeholder="Enter your Blood Type"
                           className="block  py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
                         />
@@ -285,6 +377,9 @@ try {
                           type="radio"
                           name="gender"
                           id=""
+                          value={"others"}
+                          checked={loginDetails.gender === "others"}
+                          onChange={handleChange}
                           placeholder="Enter your Blood Type"
                           className="block  py-4 pl-5 pr-4 text-black placeholder-gray-500 transition-all duration-200 border border-gray-200 rounded-md bg-gray-50 focus:outline-none focus:border-blue-600 focus:bg-white caret-blue-600"
                         />
@@ -293,17 +388,16 @@ try {
                     </div>
                   </div>
                 </div>
+                <div className="mt-3 space-y-3">
+                  <button
+                    type="submit"
+                    className="relative inline-flex items-center justify-center w-full px-4 py-4 text-base font-semibold text-white transition-all duration-200 bg-red-700 border-2 border-gray-200 rounded-md hover:bg-gray-100 focus:bg-gray-100 hover:text-red-700 focus:text-black focus:outline-none"
+                  >
+                    <div className="absolute inset-y-0 left-0 p-4"></div>
+                    Create Account
+                  </button>
+                </div>
               </form>
-
-              <div className="mt-3 space-y-3">
-                <button
-                  type="button"
-                  className="relative inline-flex items-center justify-center w-full px-4 py-4 text-base font-semibold text-white transition-all duration-200 bg-red-700 border-2 border-gray-200 rounded-md hover:bg-gray-100 focus:bg-gray-100 hover:text-red-700 focus:text-black focus:outline-none"
-                >
-                  <div className="absolute inset-y-0 left-0 p-4"></div>
-                  Create Account
-                </button>
-              </div>
 
               <p className="mt-5 text-sm text-gray-600">
                 I agree to all{" "}
@@ -328,9 +422,10 @@ try {
             </div>
           </div>
         </div>
+        <ToastContainer/>
       </section>
     </div>
   );
-}
+};
 
-export default Login
+export default Login;

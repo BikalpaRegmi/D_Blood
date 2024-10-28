@@ -88,6 +88,7 @@ contract BLOODBANK {
     }
     
     function LoginUser( string memory _name , string memory _bloodType , string memory _dob , string memory _gender , string memory _MR , uint  _EC , string memory _addr) external{
+     require(profile[msg.sender].id == address(0) , "profile already exists");
 
      LoginDetails memory loginDetails = LoginDetails(msg.sender , _name , _bloodType , _dob , _gender , _MR , _EC , _addr);
 

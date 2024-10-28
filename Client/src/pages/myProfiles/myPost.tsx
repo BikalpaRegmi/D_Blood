@@ -21,13 +21,13 @@ const MyPosts = () => {
             onClick={() => setShowPost(true)}
             className="cursor-pointer hover:underline"
           >
-            Posts
+           My Posts
           </h1>
           <h1
             onClick={() => setShowPost(false)}
             className="cursor-pointer hover:underline"
           >
-            Activities
+           My Activities
           </h1>
         </div>
       </div>

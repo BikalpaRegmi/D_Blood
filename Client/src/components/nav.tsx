@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { useEthereum } from "../context/contractContext";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 
 interface detailsState{
@@ -43,11 +43,11 @@ const Nav = () => {
           <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <nav className="flex items-center justify-between h-16 lg:h-20">
               <div className="flex-shrink-0">
-                <Link to="/">
-                  <h1 className="text-3xl drop-shadow-md font-bold text-red-700">
+              
+                  <h1 onClick={()=>navigate('/')} className="text-3xl drop-shadow-md cursor-pointer font-bold text-red-700">
                     {details.name}
                   </h1>
-                </Link>
+               
               </div>
 
               <button
@@ -63,9 +63,9 @@ const Nav = () => {
                   stroke="currentColor"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
                     d="M4 8h16M4 16h16"
                   />
                 </svg>
@@ -78,22 +78,16 @@ const Nav = () => {
                   stroke="currentColor"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
                     d="M6 18L18 6M6 6l12 12"
                   />
                 </svg>
               </button>
 
               <div className="hidden lg:flex lg:items-center lg:ml-auto lg:space-x-10">
-                <span className="flex gap-1 bg-red-700 rounded-lg">
-                  <input
-                    type="text"
-                    className="text-base border-2 font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
-                  />
-                  <FaSearch className="text-xl cursor-pointer mt-1 pr-1 text-white" />
-                </span>
+                
 
                 <a
                   href=""
