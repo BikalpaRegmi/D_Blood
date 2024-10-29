@@ -422,7 +422,7 @@ const Login = () => {
             </div>
           </div>
         </div>
-        <ToastContainer/>
+        <ToastContainer />
       </section>
     </div>
   );

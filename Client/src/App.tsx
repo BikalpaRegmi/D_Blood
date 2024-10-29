@@ -10,6 +10,7 @@ import Initiate from './pages/initiate';
 import Profile from './pages/Profile';
 import { useEffect, useState } from 'react';
 import { useEthereum } from './context/contractContext';
+import EditProfile from './pages/myProfiles/editProfile';
 
 interface MyDetail {
   id: string | null;
@@ -53,6 +54,7 @@ function App() {
       <Route path='/post/:id' element={<Post/>}/>
       <Route path='/notifications' element={<Notification/>}/>
       <Route path='/myProfile' element={<MyProfile/>}/>
+      <Route path='/editProfile' element={<EditProfile/>}/>
       <Route path='/profile/:id' element={<Profile/>}/>
       <Route path='/Token' element={<Token/>}/>
       <Route path='/myPendingRequests' element={<Initiate/>}/>

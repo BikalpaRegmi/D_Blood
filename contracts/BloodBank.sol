@@ -292,6 +292,7 @@ function buyBks() external payable {
 
      if(msg.value == 0.002 ether) {
       balances[msg.sender] += 100;
+      balances[owner] -=100;
       myNotificationCount[msg.sender]++;
       notifications[msg.sender][myNotificationCount[msg.sender]] = string("Bought 100BKS sucessfully");
       activitiesCount[msg.sender]++;
@@ -299,7 +300,8 @@ function buyBks() external payable {
      } 
 
      if(msg.value == 0.001 ether) {
-      balances[msg.sender] += 50;
+      balances[msg.sender] = 50;
+      balances[owner] -= 50;
        myNotificationCount[msg.sender]++;
       notifications[msg.sender][myNotificationCount[msg.sender]] = string("Bought 50BKS sucessfully");
      activitiesCount[msg.sender]++;

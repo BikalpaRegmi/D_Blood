@@ -1,108 +1,144 @@
-import { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { useEthereum } from "../../context/contractContext";
 import axios from "axios";
+  import { ToastContainer, toast } from "react-toastify";
+  import "react-toastify/dist/ReactToastify.css";
 
-interface comment {
-  commentator: string;
-  text:string,
-}
 interface reqType {
-  requestor: null | string;
   requestId: null | string;
   details: null | string;
   image: null | string;
-  comments: comment[];
 }
+
 const RequestPost = () => {
   const [showCreate, setShowCreate] = useState<boolean>(false);
-    const { contract, account } = useEthereum();
+  const { contract, account } = useEthereum();
   const [req, setReq] = useState<reqType>({
-    requestor: account,
-    requestId: Date.now.toString(),
+    requestId: Date.now().toString(),
     details: null,
     image: null,
-    comments:[],
-  });
+  }); 
+
   const [file, setFile] = useState<File | null>();
+  const [previewUrl, setPreviewUrl] = useState<string>("");
   const FileRef = useRef<null | HTMLInputElement>(null);
 
-  const handleChange = (e:React.ChangeEvent<HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     e.preventDefault();
     setReq((prev) => ({
       ...prev,
- [e.target.name] : e.target.value 
-    }))
-  }
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-  const handleSubmit = async() => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    toast("Creating Request plz wait...");
     try {
-      const formData = new FormData();
-      formData.append("file", file);
+      const formData: FormData = new FormData();
+      if (file != null) formData.append("file", file);
 
-      const res = await axios.post()
+      const res: any = await axios.post(
+        "https://api.pinata.cloud/pinning/pinFileToIPFS",
+        formData,
+        {
+          headers: {
+            pinata_api_key: import.meta.env.VITE_Pinata_api_key,
+            pinata_secret_api_key: import.meta.env.VITE_Pinata_secret_api_key,
+          },
+        }
+      );
+      const imgUrl = "https://gateway.pinata.cloud/ipfs/" + res.data.IpfsHash;
+
+      if (account) {
+        const updatedData = {
+          ...req,
+          image: imgUrl,
+       
+        }
+        const transaction = await contract?.CreateRequest(updatedData.requestId, updatedData.details, updatedData.image);
+        console.log(transaction);
+        window.location.reload();
+      }
     } catch (error) {
-      console.log(error)
+      console.log(error);
     }
-  }
+  };
 
-  useEffect(() => {
-    handleSubmit();
-  },[contract , account])
-    return (
-      <>
-        {showCreate ? (
-          <div className=" bg-slate-100 delay-200 md:bg-white w-full">
-            <div className="md:mx-auto relative shadow-xl md:bg-slate-100 ml-16  w-1/2 ">
-              <h1 className="text-center text-xl md:text-3xl pb-3 font-bold text-red-600">
-                {" "}
-                Create Request{" "}
-              </h1>
-              <p
-                onClick={() => setShowCreate(false)}
-                className="absolute md:right-3 top-1 right-[-135px] font-bold bg-slate-200 hover:bg-slate-300 cursor-pointer rounded-full px-2 text-xl"
-              >
-                X
-              </p>
-              <div className="textsec md:ml-16">
-                <textarea
-                  className=" border-2 w-[300px] md:w-[500px] md:h-40 pl-2 text-lg"
-                  name="details"
-                  id=""
-                  placeholder="Plz enter request details"
-                  onChange={handleChange}
-                ></textarea>
-              </div>
+  
 
-              <div className="flex  pb-5 mt-3 gap-20 flex-row md:flex-row">
-                <div className="image md:ml-16">
-                  <button onClick={()=>FileRef.current?.click()} className="font-bold md:text-xl px-1 md:w-auto w-28 hover:bg-green-900 text-white bg-green-700">
-                    Select Image{" "}
-                  </button> <button onClick={handleSubmit}>upload</button>
-                  <input type="file" ref={FileRef} onChange={(e : React.ChangeEvent<HTMLInputElement>)=>setFile(e.target.files && e.target.files[0])} className="hidden" />
-                </div>
-
-                <div className="post  md:ml-16">
-                  <button  className="font-bold md:w-auto w-28 md:text-xl px-1 hover:bg-red-900 text-white bg-red-700">
-                    Post Request (100 BKS)
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div className="w-full">
+  return (
+    <>
+      {showCreate ? (
+        <div className="bg-slate-100 w-full px-4 py-6 md:px-0">
+          <div className="max-w-lg mx-auto shadow-lg p-6 bg-white rounded-lg relative">
+            <h1 className="text-center text-2xl font-bold text-red-600 mb-4">
+              Create Request
+            </h1>
             <button
-              onClick={() => {
-                setShowCreate(true);
-              }}
-              className="text-2xl  text-white bg-red-800 font-bold p-1 rounded-md ml-[116px] md:ml-[555px] mt-3 "
+              onClick={() => setShowCreate(false)}
+              className="absolute top-3 right-3 font-bold text-lg text-gray-600 hover:text-gray-800"
             >
-              CreateRequest +{" "}
+              X
             </button>
-          </div>
-        )}
-      </>
-    );
-}
+            <div className="mb-4">
+              <textarea
+                className="w-full border border-gray-300 rounded-md p-2 text-lg resize-none focus:outline-none focus:ring focus:border-red-300"
+                name="details"
+                placeholder="Please enter request details"
+                onChange={handleChange}
+              ></textarea>
+            </div>
 
-export default RequestPost
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4 mb-4">
+              <button
+                onClick={() => FileRef.current?.click()}
+                className="font-bold text-lg px-4 py-2 bg-green-700 text-white rounded-md hover:bg-green-800"
+              >
+                Select Image
+              </button>
+              <input
+                type="file"
+                ref={FileRef}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                  const selectedFile = e.target.files && e.target.files[0];
+                  setFile(selectedFile);
+                  if (selectedFile)
+                    setPreviewUrl(URL.createObjectURL(selectedFile));
+                }}
+                className="hidden"
+              />
+
+              <button
+                onClick={handleSubmit}
+                className="font-bold text-lg px-4 py-2 bg-red-700 text-white rounded-md hover:bg-red-800"
+              >
+                Post Request (100 BKS)
+              </button>
+            </div>
+
+            {previewUrl && (
+              <img
+                src={previewUrl}
+                alt="Preview"
+                className="w-full  object-cover border border-gray-200 rounded-md mt-4"
+              />
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="w-full text-center mt-6">
+          <button
+            onClick={() => setShowCreate(true)}
+            className="text-2xl font-bold text-white bg-red-800 py-2 px-6 rounded-md hover:bg-red-900 transition-colors"
+          >
+            Create Request +
+          </button>
+        </div>
+      )}
+      <ToastContainer/>
+    </>
+  );
+};
+
+export default RequestPost;
