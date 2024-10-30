@@ -9,101 +9,96 @@ interface EditType {
       bloodType: string,
       dateOfBirth: string,
       medicalReport: string,
-      emergencyContact: string,
+      emergencyContact: number,
       myAddress:string,
       gender:string,
 }
 
 const EditProfile = () => {
- const [previewImg, setPreviewImg] = useState<string>();
- const [file, setFile] = useState<File>();
- const [previousDetail, setPreviousDetail] = useState<EditType>({
-   name: "",
-   bloodType: "",
-   dateOfBirth: "",
-   medicalReport: "",
-   emergencyContact: "",
-   myAddress: "",
-   gender: "",
- });
+    const [previewImg, setPreviewImg] = useState<string>();
+    const [file, setFile] = useState<File>();
+    const [previousDetail, setPreviousDetail] = useState<EditType>({
+      name: "",
+      bloodType: "",
+      dateOfBirth: "",
+      medicalReport: "",
+      emergencyContact: 0,
+      myAddress:'',
+      gender:'',
+    });
 
- const [edit, setEdit] = useState<EditType>(previousDetail);
+     const [edit, setEdit] = useState<EditType>(previousDetail);
+    
+    const { contract, account } = useEthereum();
+    const navigate = useNavigate();
 
- const { contract, account } = useEthereum();
- const navigate = useNavigate();
+    const getPreviousDetail = async() => {
+        const getDeta = await contract?.profile(account);
+        if (getDeta) {  
+            const set =  {
+                name: getDeta.name,
+                bloodType: getDeta.bloodType,
+                dateOfBirth: getDeta.dateOfBirth,
+          medicalReport: getDeta.medicalReport,
+          emergencyContact: Number(getDeta.emergencyContact),
+          myAddress: getDeta.myAddress,
+          gender:getDeta.gender,
+            }
+            setPreviousDetail(set);
+          setEdit(set);
+          
+    }
+    }
+    
+    const handleSubmit = async(e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
+            if (file !=null) {
+                const selectedFile: FormData = new FormData();
+                selectedFile.append('file', file);
+                const res: any = await axios.post(
+                    "https://api.pinata.cloud/pinning/pinFileToIPFS",
+                    selectedFile,
+                    {
+                    headers: {
+                      "Content-Type": "multipart/form-data",
+                      pinata_api_key: import.meta.env.VITE_Pinata_api_key,
+                      pinata_secret_api_key: import.meta.env.VITE_Pinata_secret_api_key,
+                    },
+                }
+            );
+         const imgUrl:string = 'https://gateway.pinata.cloud/ipfs/' + res.data.IpfsHash;
+                setEdit((prev) => ({
+                    ...prev, medicalReport:imgUrl,
+            }))
+        }         
+            
+const transact = await contract?.EditMyProfile(
+  edit.name,
+  edit.bloodType,
+  edit.dateOfBirth,
+  edit.gender,
+  edit.medicalReport,
+  edit.emergencyContact,
+  edit.myAddress
+          );
+          await transact.wait();
+            navigate('/myProfile');
 
- const getPreviousDetail = async () => {
-   const getDeta = await contract?.profile(account);
-   if (getDeta) {
-     const details = {
-       name: getDeta.name,
-       bloodType: getDeta.bloodType,
-       dateOfBirth: getDeta.dateOfBirth,
-       medicalReport: getDeta.medicalReport,
-       emergencyContact: getDeta.emergencyContact,
-       myAddress: getDeta.myAddress,
-       gender: getDeta.gender,
-     };
-     setPreviousDetail(details);
-     setEdit(details); // Set initial edit state to previous details
-   }
- };
-
- const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-   e.preventDefault();
-   try {
-     let imgUrl: string;
-     if (file) {
-       const selectedFile: FormData = new FormData();
-       selectedFile.append("file", file);
-       const res: any = await axios.post(
-         "https://api.pinata.cloud/pinning/pinFileToIPFS",
-         selectedFile,
-         {
-           headers: {
-             "Content-Type": "multipart/form-data",
-             pinata_api_key: import.meta.env.VITE_Pinata_api_key,
-             pinata_secret_api_key: import.meta.env.VITE_Pinata_secret_api_key,
-           },
-         }
-       );
-       imgUrl = "https://gateway.pinata.cloud/ipfs/" + res.data.IpfsHash;
-       setEdit((prev) => ({
+        } catch (error) {
+            console.log(error)
+        }
+    }
+    
+    const handleChange = (e:React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+        setEdit((prev) => ({
          ...prev,
-         medicalReport: imgUrl, // Update only the medical report
-       }));
-     }
-
-     const transact = await contract?.EditMyProfile(
-       edit.name,
-       edit.bloodType,
-       edit.dateOfBirth,
-       edit.gender,
-       edit.medicalReport,
-       edit.emergencyContact,
-       edit.myAddress
-     );
-     await transact.wait();
-     navigate("/myProfile");
-   } catch (error) {
-     console.log(error);
-   }
- };
-
- const handleChange = (
-   e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
- ) => {
-   const { name, value } = e.target;
-   setEdit((prev) => ({
-     ...prev,
-     [name]: value, // Update only the specific field that changed
-   }));
- };
-
- useEffect(() => {
-   getPreviousDetail();
- }, [account]);
-
+         [e.target.name] : e.target.value
+     }))
+    }
+    useEffect(() => {
+        getPreviousDetail();
+    }, [account]);
 
     return (
       <div>
@@ -193,7 +188,6 @@ const EditProfile = () => {
                     type="number"
                     name="emergencyContact"
                     onChange={handleChange}
-                    placeholder={previousDetail.emergencyContact}
                     id="price"
                     className="shadow-sm bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5"
                   />

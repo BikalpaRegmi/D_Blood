@@ -6,7 +6,8 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 
 contract BLOODBANK {
-        using Strings for uint256;
+        using Strings for uint256 ;
+        using Strings for address ;
 
     string public name ;
     address public owner ;
@@ -33,6 +34,7 @@ contract BLOODBANK {
         address requestor;
         string requestId;
         string details ;
+        string bloodType;
         string image ; 
         Comment[] comments;
     }
@@ -104,29 +106,29 @@ contract BLOODBANK {
      require(loginDetails.id == msg.sender , "You are not the profile owner");
      
 
-    if (bytes(_name).length > 0) {
+    if (bytes(_name).length != bytes(loginDetails.name).length) {
         loginDetails.name = _name;
         myNotificationCount[msg.sender]++;
         notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed name to " , _name , " Sucessfully"));
     }
-    if (bytes(_bloodType).length > 0) {
+    if (bytes(_bloodType).length != bytes(loginDetails.bloodType).length) {
         loginDetails.bloodType = _bloodType;
         myNotificationCount[msg.sender]++;
         notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed BloodType to " , _bloodType , " Sucessfully"));
     }
-    if (bytes(_dob).length > 0) {
+    if (bytes(_dob).length != bytes(loginDetails.dateOfBirth).length) {
         loginDetails.dateOfBirth = _dob;
         myNotificationCount[msg.sender]++;
         notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed dob to " , _dob , " Sucessfully"));
 
     }
-    if (bytes(_gender).length > 0) {
+    if (bytes(_gender).length != bytes(loginDetails.gender).length) {
         loginDetails.gender = _gender;
         myNotificationCount[msg.sender]++;
           notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed gender to " , _gender , " Sucessfully"));
 
     }
-    if (bytes(_MR).length > 0) {
+    if (bytes(_MR).length != bytes(loginDetails.medicalReport).length) {
         loginDetails.medicalReport = _MR;
                 myNotificationCount[msg.sender]++;
                  notifications[msg.sender][myNotificationCount[msg.sender]] = "Updated medical report sucessfully";
@@ -134,14 +136,14 @@ contract BLOODBANK {
    activities[msg.sender][activitiesCount[msg.sender]] = string("Updated Medical Report");
 
     }
-    if (_EC != 0) {
+    if (_EC != loginDetails.emergencyContact) {
         loginDetails.emergencyContact = _EC;
         myNotificationCount[msg.sender]++;
-        notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed Contact to " , _EC , " Sucessfully"));
+        notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed Contact to " , _EC.toString() , " Sucessfully"));
 
     }
 
-    if(bytes(_adr).length > 0){
+    if(bytes(_adr).length != bytes(loginDetails.myAddress).length){
         loginDetails.myAddress = _adr;
         myNotificationCount[msg.sender]++;
                 notifications[msg.sender][myNotificationCount[msg.sender]] = string(abi.encodePacked("Changed Address to " , _adr , " Sucessfully"));
@@ -149,7 +151,7 @@ contract BLOODBANK {
     }
     }
 
-    function CreateRequest (string memory _requestID , string memory _details , string memory _image) external {
+    function CreateRequest (string memory _requestID , string memory _details , string memory _image ) external {
      require(balances[msg.sender] >= 100 , "not enough BKS token") ;
 
     Requests storage request = allRequests[_requestID]; 
@@ -157,6 +159,7 @@ contract BLOODBANK {
     request.requestId = _requestID ;
     request.details = _details ;
     request.image = _image ;
+    request.bloodType = profile[msg.sender].bloodType;
     allRequests[_requestID] = request ;
     requestIds.push(_requestID);
     myRequestsCount[msg.sender]++;
@@ -177,7 +180,7 @@ contract BLOODBANK {
 
       return requests ;
    }
-
+//allrequests
    function getAllMyRequests() external view returns (Requests[] memory){
      require(myRequestsCount[msg.sender] > 0 , "You have no Requests till now") ;
       
@@ -219,6 +222,7 @@ contract BLOODBANK {
       require(allRequests[_reqId].requestor ==msg.sender , "Only Requestor can deleteRequest");
       _deleteRequest(_reqId);
       balances[msg.sender] += 97 ;
+      balances[owner]+=3;
       }
 
     function addComment(string memory _requestId, string memory _comment) external {
@@ -231,6 +235,8 @@ contract BLOODBANK {
         });
 
         request.comments.push(comment);
+        myNotificationCount[request.requestor]++;
+        notifications[request.requestor][myNotificationCount[request.requestor]] = string(abi.encodePacked(profile[msg.sender].name , " Commented on your post"));
     }
 
  function removeComment(string memory _requestId) external {
@@ -300,7 +306,7 @@ function buyBks() external payable {
      } 
 
      if(msg.value == 0.001 ether) {
-      balances[msg.sender] = 50;
+      balances[msg.sender] += 50;
       balances[owner] -= 50;
        myNotificationCount[msg.sender]++;
       notifications[msg.sender][myNotificationCount[msg.sender]] = string("Bought 50BKS sucessfully");
@@ -314,13 +320,12 @@ function buyBks() external payable {
      string[] memory notis = new string[](myNotificationCount[msg.sender]);
 
      for(uint i=0 ; i<myNotificationCount[msg.sender] ; i++){
-      notis[i] = notifications[msg.sender][i];
+      notis[i] = notifications[msg.sender][i+1];
      }
 
      return notis ;
     } 
   
-//2 b tested
      function initiate(address _commentatorId , string memory _requestId) external {
        string memory name3 = profile[_commentatorId].name;
 
@@ -387,7 +392,7 @@ function buyBks() external payable {
    notifications[_donor][myNotificationCount[_donor]] = string(abi.encodePacked("Donated Blood and got BKS from " , profile[msg.sender].name));
 
    myNotificationCount[owner]++;
-   notifications[owner][myNotificationCount[owner]] = string(abi.encodePacked("Gained 3BKS from transactions for " , _donor));
+   notifications[owner][myNotificationCount[owner]] = string(abi.encodePacked("Gained 3BKS from transactions for " , _donor.toHexString()));
 
    activitiesCount[msg.sender]++;
    activities[msg.sender][activitiesCount[msg.sender]] = string(abi.encodePacked("Got blood by " , profile[_donor].name));
@@ -396,6 +401,17 @@ function buyBks() external payable {
    activities[_donor][activitiesCount[_donor]] = string(abi.encodePacked("Helped " , profile[msg.sender].name));
    
    _deleteRequest(_reqId);
+}
+//   mapping (address => mapping(uint=>string)) public activities;
+  //  mapping (address=>uint) public activitiesCount ;
+function getAllActivities() external view returns (string[] memory) {
+  string[] memory activitiesArr = new string[](activitiesCount[msg.sender]);
+
+  for(uint i=0 ; i<activitiesCount[msg.sender] ; i++){
+    activitiesArr[i] = activities[msg.sender][i+1];
+  }
+
+  return activitiesArr;
 }
 
 }

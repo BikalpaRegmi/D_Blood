@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Modal from "../../components/deletePostModal";
+import { useEthereum } from "../../context/contractContext";
 
 interface totalBksProps {
   totalBks: number,
@@ -8,8 +9,16 @@ interface totalBksProps {
 
 const MyTokenDetails:React.FC<totalBksProps> = ({totalBks , buyBks}) => {
   const [open, setOpen] = useState<boolean>(false);
+  const { contract } = useEthereum();
 
-  
+  const withdrawBks = async() => {
+    try {
+      await contract?.withdraw();
+      
+    } catch (error) {
+      console.log(error)
+    }
+  }
   return (
     <div>
       <section className="text-gray-600 body-font">
@@ -38,11 +47,9 @@ const MyTokenDetails:React.FC<totalBksProps> = ({totalBks , buyBks}) => {
             </small>
 
             <div className="flex mt-5 justify-center">
-              <button className="inline-flex text-white bg-indigo-500 border-0 py-2 px-6 focus:outline-none hover:bg-gray-200 rounded text-lg">
-                Transfer
-              </button>
+             
 
-              <button className="ml-4 inline-flex text-white bg-red-500 border-0 py-2 px-6 focus:outline-none hover:bg-gray-200 rounded text-lg">
+              <button onClick={withdrawBks} className="ml-4 inline-flex text-white bg-red-500 border-0 py-2 px-6 focus:outline-none hover:bg-gray-200 rounded text-lg">
                 Withdraw
               </button>
 
@@ -60,7 +67,7 @@ const MyTokenDetails:React.FC<totalBksProps> = ({totalBks , buyBks}) => {
                     Buy BKS token
                   </h3>
                   <p className="text-sm text-gray-500">
-                    100BKS = 0.002eth ___ 50BKS = 0.001eth ___
+                    100BKS = 0.002eth (sepolia) 50BKS = 0.001eth (sepolia)
                   </p>
                 </div>
                 <div className="flex gap-4">

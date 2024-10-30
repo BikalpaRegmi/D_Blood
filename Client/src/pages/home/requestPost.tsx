@@ -82,7 +82,7 @@ const RequestPost = () => {
               X
             </button>
             <div className="mb-4">
-              <textarea
+              <textarea required
                 className="w-full border border-gray-300 rounded-md p-2 text-lg resize-none focus:outline-none focus:ring focus:border-red-300"
                 name="details"
                 placeholder="Please enter request details"

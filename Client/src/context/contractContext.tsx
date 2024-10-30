@@ -33,7 +33,7 @@ export const EthererumContextProvider = ({ children } :childrenProps) => {
 
     const template = async () => {
         const contractAddress: string =
-          "0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9";
+          "0x67bB51f550C459AEae5633D14d0f5aC18138cf18";
         const byteCode: any = abi.abi;
         const ethereum = window.ethereum;
         

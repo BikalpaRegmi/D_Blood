@@ -5,6 +5,15 @@ import { useEffect, useState } from "react";
 import MyActivities from "./myActivities";
 import Modal from "../../components/deletePostModal";
 import { useRequests } from "../../context/PostContext";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import {
+  FacebookShareButton,
+  WhatsappShareButton,
+  TwitterShareButton,
+} from "react-share";
+import { FaSquareXTwitter } from "react-icons/fa6";
+import { FaFacebook, FaWhatsappSquare } from "react-icons/fa";
 
 interface MyDetail {
   id: string | null;
@@ -23,7 +32,8 @@ const MyPosts = () => {
   const { account , contract } = useEthereum();
   const [showPost, setShowPost] = useState<boolean>(true);
   const [open, setOpen] = useState<boolean>(false);
-  const { posts, myPosts } = useRequests();
+  const { myPosts } = useRequests();
+    const [openShare, setOpenShare] = useState<string | null>(null);
   const [myDetail, setMyDetail] = useState<MyDetail>({
     id: null,
     name: null,
@@ -39,7 +49,16 @@ const MyPosts = () => {
     const data = await contract?.profile(account);
     setMyDetail(data);
   };
-
+ 
+  const handleDelete = async (requestId:string) => {
+    try {
+      await contract?.deleteRequest(requestId);
+      toast('Deleting post may require a minute plz wait')
+      setOpen(false);
+    } catch (error) {
+      console.log(error)
+    }
+  }
   useEffect(() => {
     if (account && contract) getAccountDetail();
   }, [account, contract]);
@@ -120,7 +139,7 @@ const MyPosts = () => {
 
                       <div className="details mt-1 mb-1 border-b-2 pb-1 border-red-600">
                         <p>
-                          {curval.details.slice(0, 49)}...
+                          {curval.details.slice(0, 45)}...
                           <Link to={`/post/${curval.requestId}`}>
                             {" "}
                             <u className="text-slate-500 cursor-pointer">
@@ -145,11 +164,10 @@ const MyPosts = () => {
                             <button
                               className="btn btn-danger hover:bg-slate-50 text-red-700 font-bold w-full"
                               onClick={() => {
-                                navigate("/Disconnect");
-                                setOpen(false);
+                                handleDelete(curval.requestId);
                               }}
                             >
-                              Disconnect
+                              Delete
                             </button>
                             <button
                               className="btn font-semibold hover:bg-slate-50 text-green-600 btn-light w-full"
@@ -176,9 +194,43 @@ const MyPosts = () => {
                       </div>
 
                       <div className="bottom flex justify-around">
-                        <button className="bg-green-800 flex justify-around w-20  md:w-40 text-lg text-white">
+                        <button
+                          onClick={() =>
+                            openShare === null
+                              ? setOpenShare(curval.requestId)
+                              : setOpenShare(null)
+                          }
+                          className="bg-green-800 flex justify-around w-20  md:w-40 text-lg text-white"
+                        >
                           Share <CiShare2 className="text-xl mt-1" />
                         </button>
+
+                        {openShare === curval.requestId ? (
+                          <div className="icons flex gap-5 justify-end">
+                            <FacebookShareButton
+                              url={`http://localhost:5173/post/${curval.requestId}`}
+                              hashtag="#help #blood #dblood"
+                            >
+                              <FaFacebook className="w-9 text-3xl" />
+                            </FacebookShareButton>
+
+                            <WhatsappShareButton
+                              url={`http://localhost:5173/post/${curval.requestId}`}
+                              title="Plz help this person"
+                            >
+                              <FaWhatsappSquare className="w-9 text-3xl" />
+                            </WhatsappShareButton>
+
+                            <TwitterShareButton
+                              hashtags={['help' , 'urgent' , 'bloodneeded']}
+                              url={`http://localhost:5173/post/${curval.requestId}`}
+                            >
+                              <FaSquareXTwitter className="w-9 text-3xl" />
+                            </TwitterShareButton>
+                          </div>
+                        ) : (
+                          ""
+                        )}
                       </div>
                     </div>
                   </div>
@@ -188,6 +240,7 @@ const MyPosts = () => {
       ) : (
         <MyActivities />
       )}
+      <ToastContainer/>
     </div>
   );
 };

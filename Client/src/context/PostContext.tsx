@@ -11,6 +11,7 @@ interface postContextType {
   requestId: string | null;
   details: string | null;
   image: string | null;
+  bloodType: string | null;
   comments: comment[];
 }
 
@@ -32,7 +33,9 @@ export const PostContextProvider = ({ children }: any) => {
           requestId: curval.requestId || "No ID",
           image:curval.image || 'No img ' ,
           details: curval.details || "No details",
+          comments:curval.comments || 'no comments',
           requestor: curval.requestor || "No requestor",
+          bloodType : curval.bloodType || 'No blood Type',
           name: profile?.name || "Unknown",
           addr: profile?.myAddress || "Unknown",
         };
@@ -43,7 +46,7 @@ export const PostContextProvider = ({ children }: any) => {
   
   const getMyPosts = async () => {
     const res = await contract?.getAllRequests();
-    const myReq = res.filter((allPost: any) => allPost.requestor.toLowerCase() === account?.toLowerCase());
+    const myReq = res?.filter((allPost: any) => allPost.requestor.toLowerCase() === account?.toLowerCase());
    if(myReq) setmyPosts(myReq);
   }
   

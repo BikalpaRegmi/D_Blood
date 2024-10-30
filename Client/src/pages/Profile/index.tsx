@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Nav from "../../components/nav";
 import Details from "./details";
 import { useEthereum } from "../../context/contractContext";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 
 interface DetailType {
  id: string | null;
@@ -19,7 +19,7 @@ const Profile :React.FC = () => {
   const [detail, setDetail] = useState<DetailType | undefined>(undefined);
   const { contract, account } = useEthereum();
   const { id } = useParams();
-
+  const navigate = useNavigate();
   const getDetail = async () => {
     try {
       const res = await contract?.profile(id);
@@ -33,10 +33,16 @@ const Profile :React.FC = () => {
     getDetail();
   }, [account, contract]);
 
+  useEffect(() => {
+    if(account?.toLowerCase() === id?.toLowerCase() ) navigate('/myProfile')
+  },[id])
+
   return (
     <div>
       <Nav />
-      <Details detail={detail} /> 
+     
+        <Details detail={detail} />
+    
     </div>
   );
 };

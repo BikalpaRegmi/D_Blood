@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react"
 import { useEthereum } from "../context/contractContext";
 import { useNavigate } from "react-router-dom";
-import { FaSearch } from "react-icons/fa";
 
 interface detailsState{
     name: string | null,
@@ -43,11 +42,12 @@ const Nav = () => {
           <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
             <nav className="flex items-center justify-between h-16 lg:h-20">
               <div className="flex-shrink-0">
-              
-                  <h1 onClick={()=>navigate('/')} className="text-3xl drop-shadow-md cursor-pointer font-bold text-red-700">
-                    {details.name}
-                  </h1>
-               
+                <h1
+                  onClick={() => navigate("/")}
+                  className="text-3xl drop-shadow-md cursor-pointer font-bold text-red-700"
+                >
+                  {details.name}
+                </h1>
               </div>
 
               <button
@@ -87,111 +87,105 @@ const Nav = () => {
               </button>
 
               <div className="hidden lg:flex lg:items-center lg:ml-auto lg:space-x-10">
-                
-
-                <a
-                  href=""
+                <button
                   title=""
                   className="text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                   onClick={() => navigate("/notifications")}
                 >
                   {" "}
                   Notifications{" "}
-                </a>
+                </button>
 
-                <a
-                  href=""
+                <button
                   title=""
                   className="text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                   onClick={() => navigate("/myPendingRequests")}
                 >
                   {" "}
                   Pending Donations{" "}
-                </a>
+                </button>
 
-                <a
-                  href=""
+                <button
                   title=""
                   className="text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                   onClick={() => navigate("/myProfile")}
                 >
                   {" "}
                   Profile{" "}
-                </a>
+                </button>
 
-                <a
-                  href=""
+                <button
                   title=""
                   className="text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                   onClick={() => navigate("/Token")}
                 >
                   {" "}
                   BKS{" "}
-                </a>
+                </button>
               </div>
 
-              <a
-                href=""
+              <button
+                onClick={() => navigate("/disconnectMetamask")}
                 title=""
                 className="items-center justify-center hidden px-4 py-3 ml-10 text-base font-semibold text-white transition-all duration-200 bg-red-600 border border-transparent rounded-md lg:inline-flex hover:bg-red-700 focus:bg-blue-700"
                 role="button"
               >
                 {" "}
                 Disconnect Metamask{" "}
-              </a>
+              </button>
             </nav>
 
             {shownav && (
               <nav className="pt-4 pb-6  bg-white border border-gray-200 rounded-md shadow-md lg:hidden">
                 <div className="flow-root">
                   <div className="flex flex-col px-6 -my-2 space-y-1">
-                    <a
-                      href=""
+                    <button
                       title=""
                       className="inline-flex py-2 text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                       onClick={() => navigate("/notifications")}
                     >
                       {" "}
                       Notifications{" "}
-                    </a>
+                    </button>
 
-                    <a
+                    <button
                       title=""
                       className="inline-flex py-2 text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                       onClick={() => navigate("/myPendingRequests")}
                     >
                       {" "}
                       Pending Donations{" "}
-                    </a>
+                    </button>
 
-                    <a
+                    <button
                       onClick={() => navigate(`/myProfile`)}
                       title=""
                       className="inline-flex py-2 text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                     >
                       {" "}
                       Profile{" "}
-                    </a>
+                    </button>
 
-                    <a
+                    <button
                       title=""
                       className="inline-flex py-2 text-base font-medium text-black transition-all duration-200 hover:text-blue-600 focus:text-blue-600"
                       onClick={() => navigate("/Token")}
                     >
                       {" "}
                       BKS{" "}
-                    </a>
+                    </button>
                   </div>
                 </div>
                 <div className="px-6 mt-6">
-                  <a
+                  <button
                     title=""
                     className="inline-flex justify-center px-4 py-3 text-base font-semibold text-white transition-all duration-200 bg-red-600 border border-transparent rounded-md tems-center hover:bg-blue-700 focus:bg-blue-700"
                     role="button"
+                    onClick={() => navigate("/disconnectMetamask")}
                   >
                     {" "}
                     Disconnect Metamask{" "}
-                  </a>
+                  </button>
                 </div>
               </nav>
             )}
